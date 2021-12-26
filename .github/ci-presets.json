@@ -52,7 +52,7 @@
                 "ci-default"
             ],
             "cacheVariables": {
-                "CMAKE_CXX_COMPILER": "clang"
+                "CMAKE_CXX_COMPILER": "clang++12"
             }
         }
     ],
