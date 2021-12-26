@@ -32,7 +32,7 @@ jobs:
           - os: ubuntu-latest
             vcpkgCommitId: "772fe6cbce530cb3a5f0fee67b57e9861676e5d0"
             preset: ci-gcc
-          - os: ubuntu-latest
+          - os: ubuntu-20.04
             vcpkgCommitId: "772fe6cbce530cb3a5f0fee67b57e9861676e5d0"
             preset: ci-clang
             install: sudo apt install clang-12 libc++-12-dev
