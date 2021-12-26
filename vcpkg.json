@@ -1,0 +1,17 @@
+{
+    "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg/master/scripts/vcpkg.schema.json",
+    "name": "iterator-facade",
+    "version": "0.1.0",
+    "dependencies": [],
+    "features": {
+        "test": {
+            "description": "Build tests",
+            "dependencies": [
+                {
+                    "name": "catch2",
+                    "version>=": "2.13"
+                }
+            ]
+        }
+    }
+}

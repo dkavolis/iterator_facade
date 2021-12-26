@@ -1,0 +1,34 @@
+{
+  "version": 3,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 2,
+    "patch": 1
+  },
+  "configurePresets": [
+    {
+      "name": "default",
+      "hidden": true,
+      "binaryDir": "${sourceDir}/out/build/${presetName}",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/${presetName}",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": true
+      }
+    },
+    {
+      "name": "enable-doxygen",
+      "hidden": true,
+      "cacheVariables": {
+        "ITERF_ENABLE_DOXYGEN": true
+      }
+    },
+    {
+      "name": "enable-tests",
+      "hidden": true,
+      "cacheVariables": {
+        "ITERF_ENABLE_UNIT_TESTING": true
+      }
+    }
+  ]
+}
