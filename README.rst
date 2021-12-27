@@ -25,7 +25,74 @@ iterator_facade for C++20
 Features
 --------
 
-* TODO
+* ``constexpr`` support
+* automatic deduction of iterator category
+* specialized ``std::iterator_traits`` for iterators subclassing ``iterator_facade``
+* no need to specify any other types unlike ``boost::iterator_facade``
+* propagated ``noexcept``
+* works with sentinels
+
+Install
+-------
+
+Copy paste the single header into your project
+
+Usage
+-----
+
+
+
+.. code-block:: c++
+
+    struct my_iterator : iterf::iterator_facade<my_iterator> {
+        iterator it;
+        
+        // Required:
+        constexpr auto dereference() const noexcept(...) -> reference { return *it }
+        constexpr void increment() noexcept(...) { ++it; }
+        
+        // For forward iterators:
+        template <std::sentinel_for<iterator> T>
+        constexpr auto equals(T other) const noexcept(...) -> bool { return it == other; }
+        
+        // For bidirectional operators:
+        constexpr void decrement() noexcept(...) { --it; }
+        
+        // For random access iterators:
+        template <std::sentinel_for<iterator> T>
+        constexpr auto distance_to(T lhs) const noexcept(...) -> difference_type { return lhs - it; }
+        constexpr void advance(difference_type n) noexcept(...) { it += n; }
+    };
+    
+| ``my_iterator::dereference()`` is not required to return lvalue references. However, the value returned should not be a reference to a value owned by the iterator itself as it can result in dangling references.
+| ``my_iterator::advance(difference_type)`` will be used in place of ``my_iterator::increment()`` or ``my_iterator::decrement()`` if any of them are not defined.
+| ``my_iterator::distance_to(T)`` will be used in place of ``my_iterator::equals(T)`` if it is not defined.
+|
+
+``iterf::iterator_facade<T>`` will provide operators based on defined subclass methods:
+
+* ``dereference`` will enable
+    * ``constexpr auto T::operator*() const noexcept(...) -> reference``
+    * ``constexpr auto T::operator->() const noexcept(...) -> pointer`` (a proxy object if ``dereference`` returns a temporary)
+* ``increment`` or ``advance`` will enable
+    * ``constexpr auto T::operator++() noexcept(...) -> T&``
+    * ``constexpr auto T::operator++(int) noexcept(...) -> T``
+* ``equals`` or ``distance_to`` will enable
+    * ``constexpr friend auto operator==(T const&, sentinel const&) noexcept(...) -> bool``
+* ``decrement`` or ``advance`` will enable
+    * ``constexpr auto T::operator--() noexcept(...) -> T&``
+    * ``constexpr auto T::operator--(int) noexcept(...) -> T``
+* ``distance_to`` will additionaly enable
+    * ``constexpr friend T::auto operator-(T const&, sentinel&) noexcept(...) -> difference_type``
+    * ``constexpr friend T::auto operator(sentinel&, T const&) noexcept(...) -> difference_type``
+    * ``constexpr friend T::auto operator<=>(T const&, sentinel const&) noexcept(...)```
+* ``advance`` will additionally enable
+    * ``constexpr friend T::auto operator+(T, difference_type) noexcept(...) -> T``
+    * ``constexpr friend T::auto operator+(difference_type, T) noexcept(...) -> T``
+    * ``constexpr friend T::auto operator+=(T&, difference_type) noexcept(...) -> T&``
+    * ``constexpr friend T::auto operator-(T, difference_type) noexcept(...) -> T``
+    * ``constexpr friend T::auto operator-=(T&, difference_type) noexcept(...) -> T&``
+    * ``constexpr auto T::operator[](difference_type) const noexcept(...) -> reference`` (will leave a dangling reference if it points to a value owned by the iterator)
 
 Credits
 -------
