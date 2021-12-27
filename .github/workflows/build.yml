@@ -24,19 +24,22 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-2022]
         include:
           - os: windows-2022
             vcpkgCommitId: "772fe6cbce530cb3a5f0fee67b57e9861676e5d0"
             preset: ci-msvc
+            cxx: cl
           - os: ubuntu-latest
             vcpkgCommitId: "772fe6cbce530cb3a5f0fee67b57e9861676e5d0"
-            preset: ci-gcc
-          - os: ubuntu-20.04
+            preset: ci-linux
+            cxx: g++-11
+            install: sudo apt install g++-11
+          - os: ubuntu-latest
             vcpkgCommitId: "772fe6cbce530cb3a5f0fee67b57e9861676e5d0"
-            preset: ci-clang
-            install: sudo apt install clang-12 libc++-12-dev
+            preset: ci-linux
+            install: sudo apt install libc++-12-dev libc++abi-12-dev
             cxxflags: -stdlib=libc++
+            cxx: clang-12
 
     steps:
       - uses: actions/checkout@v2
@@ -62,7 +65,7 @@ jobs:
           # The Git commit id of vcpkg to be checked out. This is only needed because we are not using a submodule.
           vcpkgGitCommitId: "${{ matrix.vcpkgCommitId }}"
           # The vcpkg.json file, which will be part of cache key computation.
-          # vcpkgJsonGlob: "${{ github.workspace }}/vcpkg.json"
+          vcpkgJsonGlob: "vcpkg.json"
 
       - name: Prints output of run-vcpkg's action
         run: echo "root='${{ steps.runvcpkg.outputs.RUNVCPKG_VCPKG_ROOT_OUT }}', triplet='${{ steps.runvcpkg.outputs.RUNVCPKG_VCPKG_DEFAULT_TRIPLET_OUT }}'"
@@ -76,7 +79,7 @@ jobs:
         uses: lukka/run-cmake@v10
         env:
           CXX: ${{ matrix.cxx }}
-          CXXFLAGS: ${{ matrix.cxxflags}}
+          CXXFLAGS: ${{ matrix.cxxflags }}
         with:
           cmakeListsTxtPath: "${{ github.workspace }}/CMakeLists.txt"
           configurePreset: ${{ matrix.preset }}
