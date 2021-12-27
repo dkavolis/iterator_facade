@@ -2,14 +2,9 @@
 iterator_facade
 ===============
 
-.. image:: https://github.com/dkavolis/iterator_facade/workflows/Build%20Linux,%20MacOS,%20Windows%20and%20deploy%20artifacts/badge.svg
-        :target: https://github.com/dkavolis/iterator_facade/workflows/Build%20Linux,%20MacOS,%20Windows%20and%20deploy%20artifacts/badge.svg
+.. image:: https://github.com/dkavolis/iterator_facade/workflows/Build/badge.svg
+        :target: https://github.com/dkavolis/iterator_facade/workflows/Build/badge.svg
         :alt: Github Workflow Build iterator_facade Status
-
-.. image:: https://github.com/dkavolis/iterator_facade/workflows/Run%20Tests/badge.svg
-        :target: https://github.com/dkavolis/iterator_facade/workflows/Run%20Tests/badge.svg
-        :alt: Github Workflow Tests Status
-
 
 .. image:: https://readthedocs.org/projects/iterator-facade/badge/?version=latest
         :target: https://iterator-facade.readthedocs.io/en/latest/?badge=latest
