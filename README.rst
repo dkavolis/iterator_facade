@@ -10,10 +10,6 @@ iterator_facade
         :target: https://iterator-facade.readthedocs.io/en/latest/?badge=latest
         :alt: Documentation Status
 
-.. image:: https://flat.badgen.net/dependabot/thepracticaldev/dev.to?icon=dependabot
-        :target: https://flat.badgen.net/dependabot/thepracticaldev/dev.to?icon=dependabot
-        :alt: Dependabot Enabled
-
 
 iterator_facade for C++20
 
@@ -46,24 +42,24 @@ Usage
 
     struct my_iterator : iterf::iterator_facade<my_iterator> {
         iterator it;
-        
+
         // Required:
         constexpr auto dereference() const noexcept(...) -> reference { return *it }
         constexpr void increment() noexcept(...) { ++it; }
-        
+
         // For forward iterators:
         template <std::sentinel_for<iterator> T>
         constexpr auto equals(T other) const noexcept(...) -> bool { return it == other; }
-        
+
         // For bidirectional operators:
         constexpr void decrement() noexcept(...) { --it; }
-        
+
         // For random access iterators:
         template <std::sentinel_for<iterator> T>
         constexpr auto distance_to(T lhs) const noexcept(...) -> difference_type { return lhs - it; }
         constexpr void advance(difference_type n) noexcept(...) { it += n; }
     };
-    
+
 | ``my_iterator::dereference()`` is not required to return lvalue references. However, the value returned should not be a reference to a value owned by the iterator itself as it can result in dangling references.
 | ``my_iterator::advance(difference_type)`` will be used in place of ``my_iterator::increment()`` or ``my_iterator::decrement()`` if any of them are not defined.
 | ``my_iterator::distance_to(T)`` will be used in place of ``my_iterator::equals(T)`` if it is not defined.
@@ -82,16 +78,16 @@ Usage
 * ``decrement`` or ``advance`` will enable
     * ``constexpr auto T::operator--() noexcept(...) -> T&``
     * ``constexpr auto T::operator--(int) noexcept(...) -> T``
-* ``distance_to`` will additionaly enable
-    * ``constexpr friend T::auto operator-(T const&, sentinel&) noexcept(...) -> difference_type``
-    * ``constexpr friend T::auto operator(sentinel&, T const&) noexcept(...) -> difference_type``
-    * ``constexpr friend T::auto operator<=>(T const&, sentinel const&) noexcept(...)```
+* ``distance_to`` will additionally enable
+    * ``constexpr friend auto T::operator-(T const&, sentinel&) noexcept(...) -> difference_type``
+    * ``constexpr friend auto T::operator(sentinel&, T const&) noexcept(...) -> difference_type``
+    * ``constexpr friend auto T::operator<=>(T const&, sentinel const&) noexcept(...)```
 * ``advance`` will additionally enable
-    * ``constexpr friend T::auto operator+(T, difference_type) noexcept(...) -> T``
-    * ``constexpr friend T::auto operator+(difference_type, T) noexcept(...) -> T``
-    * ``constexpr friend T::auto operator+=(T&, difference_type) noexcept(...) -> T&``
-    * ``constexpr friend T::auto operator-(T, difference_type) noexcept(...) -> T``
-    * ``constexpr friend T::auto operator-=(T&, difference_type) noexcept(...) -> T&``
+    * ``constexpr friend auto T::operator+(T, difference_type) noexcept(...) -> T``
+    * ``constexpr friend auto T::operator+(difference_type, T) noexcept(...) -> T``
+    * ``constexpr friend auto T::operator+=(T&, difference_type) noexcept(...) -> T&``
+    * ``constexpr friend auto T::operator-(T, difference_type) noexcept(...) -> T``
+    * ``constexpr friend auto T::operator-=(T&, difference_type) noexcept(...) -> T&``
     * ``constexpr auto T::operator[](difference_type) const noexcept(...) -> reference`` (will leave a dangling reference if it points to a value owned by the iterator)
 
 Credits
