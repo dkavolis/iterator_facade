@@ -26,7 +26,14 @@ jobs:
         with:
           submodules: true
 
+      - name: Find the number of threads (macOS)
+        run: echo "::set-output name=THREADS::`sysctl -n hw.logicalcpu`"
+        id: number-of-threads
+        shell: bash
+
       - uses: ./.github/build
+        env:
+          CMAKE_BUILD_PARALLEL_LEVEL: ${{ steps.number-of-threads.outputs.THREADS }}
         with:
           cmakePreset: ci-linux
           cxx: g++-11

@@ -37,33 +37,19 @@ runs:
 
     - name: Prints output of run-vcpkg's action
       run: echo "root='${{ steps.runvcpkg.outputs.RUNVCPKG_VCPKG_ROOT_OUT }}', triplet='${{ steps.runvcpkg.outputs.RUNVCPKG_VCPKG_DEFAULT_TRIPLET_OUT }}'"
+      shell: bash
 
     - name: Setup CMake environment
       run: |
         cp "${{ github.workspace }}/.github/ci-presets.json" "${{ github.workspace }}/CMakeUserPresets.json"
         ${{ inputs.install }}
-
-    - name: Find the number of threads (Windows)
-      if: ${{ runner.os == 'Windows' }}
-      run: echo "::set-output name=THREADS::$((Get-CimInstance Win32_ComputerSystem).NumberOfLogicalProcessors)"
-      id: number-of-threads
-
-    - name: Find the number of threads (Linux)
-      if: ${{ runner.os == 'Linux' }}
-      run: echo "::set-output name=THREADS::`nproc`"
-      id: number-of-threads
-
-    - name: Find the number of threads (macOS)
-      if: ${{ runner.os == 'macOS' }}
-      run: echo "::set-output name=THREADS::`sysctl -n hw.logicalcpu`"
-      id: number-of-threads
+      shell: bash
 
     - name: Run CMake with vcpkg.json manifest
       uses: lukka/run-cmake@v10
       env:
         CXX: ${{ inputs.cxx }}
         CXXFLAGS: ${{ inputs.cxxflags }}
-        CMAKE_BUILD_PARALLEL_LEVEL: ${{ steps.number-of-threads.outputs.THREADS }}
       with:
         cmakeListsTxtPath: "${{ github.workspace }}/CMakeLists.txt"
         configurePreset: ${{ inputs.cmakePreset }}

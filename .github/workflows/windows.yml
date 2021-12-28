@@ -26,6 +26,13 @@ jobs:
         with:
           submodules: true
 
+      - name: Find the number of threads (Windows)
+        run: echo "::set-output name=THREADS::$((Get-CimInstance Win32_ComputerSystem).NumberOfLogicalProcessors)"
+        id: number-of-threads
+        shell: pwsh
+
       - uses: ./.github/build
+        env:
+          CMAKE_BUILD_PARALLEL_LEVEL: ${{ steps.number-of-threads.outputs.THREADS }}
         with:
           cmakePreset: ci-msvc
