@@ -32,7 +32,6 @@ jobs:
         shell: pwsh
 
       - uses: ./.github/build
-        env:
-          CMAKE_BUILD_PARALLEL_LEVEL: ${{ steps.number-of-threads.outputs.THREADS }}
         with:
           cmakePreset: ci-msvc
+          threads: ${{ steps.number-of-threads.outputs.THREADS }}

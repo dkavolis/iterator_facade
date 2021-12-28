@@ -43,10 +43,9 @@ jobs:
         shell: bash
 
       - uses: ./.github/build
-        env:
-          CMAKE_BUILD_PARALLEL_LEVEL: ${{ steps.number-of-threads.outputs.THREADS }}
         with:
           cmakePreset: ci-linux
           cxx: ${{ matrix.cxx }}
           install: ${{ matrix.install }}
           cxxflags: ${{ matrix.cxxflags }}
+          threads: ${{ steps.number-of-threads.outputs.THREADS }}
