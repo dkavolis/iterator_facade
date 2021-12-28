@@ -1,0 +1,71 @@
+name: Build
+description: Build iterator_facade tests
+
+inputs:
+  cmakePreset:
+    required: true
+    description: CMake preset name
+  cxx:
+    required: false
+    description: C++ compiler to use
+  install:
+    required: false
+    description: Environment setup command
+  cxxflags:
+    required: false
+    description: C++ compiler flags
+  vcpkgGitCommitId:
+    required: false
+    default: "772fe6cbce530cb3a5f0fee67b57e9861676e5d0"
+    description: Full SHA-1 hash of vcpkg git commit
+
+runs:
+  using: composite
+  steps:
+    - uses: lukka/get-cmake@latest
+
+    - name: Restore artifacts, or setup vcpkg (do not install any package)
+      uses: lukka/run-vcpkg@v10
+      id: runvcpkg
+      with:
+        # This specifies the location of vcpkg, where it is going to be restored from cache, or create from scratch.
+        vcpkgDirectory: "${{ runner.workspace }}/b/vcpkg"
+        # The Git commit id of vcpkg to be checked out. This is only needed because we are not using a submodule.
+        vcpkgGitCommitId: "${{ inputs.vcpkgGitCommitId }}"
+        # The vcpkg.json file, which will be part of cache key computation.
+        vcpkgJsonGlob: "vcpkg.json"
+
+    - name: Prints output of run-vcpkg's action
+      run: echo "root='${{ steps.runvcpkg.outputs.RUNVCPKG_VCPKG_ROOT_OUT }}', triplet='${{ steps.runvcpkg.outputs.RUNVCPKG_VCPKG_DEFAULT_TRIPLET_OUT }}'"
+
+    - name: Setup CMake environment
+      run: |
+        cp "${{ github.workspace }}/.github/ci-presets.json" "${{ github.workspace }}/CMakeUserPresets.json"
+        ${{ inputs.install }}
+
+    - name: Find the number of threads (Windows)
+      if: ${{ runner.os == 'Windows' }}
+      run: echo "::set-output name=THREADS::$((Get-CimInstance Win32_ComputerSystem).NumberOfLogicalProcessors)"
+      id: number-of-threads
+
+    - name: Find the number of threads (Linux)
+      if: ${{ runner.os == 'Linux' }}
+      run: echo "::set-output name=THREADS::`nproc`"
+      id: number-of-threads
+
+    - name: Find the number of threads (macOS)
+      if: ${{ runner.os == 'macOS' }}
+      run: echo "::set-output name=THREADS::`sysctl -n hw.logicalcpu`"
+      id: number-of-threads
+
+    - name: Run CMake with vcpkg.json manifest
+      uses: lukka/run-cmake@v10
+      env:
+        CXX: ${{ inputs.cxx }}
+        CXXFLAGS: ${{ inputs.cxxflags }}
+        CMAKE_BUILD_PARALLEL_LEVEL: ${{ steps.number-of-threads.outputs.THREADS }}
+      with:
+        cmakeListsTxtPath: "${{ github.workspace }}/CMakeLists.txt"
+        configurePreset: ${{ inputs.cmakePreset }}
+        buildPreset: ${{ inputs.cmakePreset }}
+        testPreset: ${{ inputs.cmakePreset }}

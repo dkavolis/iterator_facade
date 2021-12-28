@@ -1,0 +1,29 @@
+name: windows
+
+on:
+  push:
+    branches: [master]
+    paths-ignore:
+      - "**/README.*"
+      - "**/CONTRIBUTING.*"
+  pull_request:
+    branches: [master]
+    paths-ignore:
+      - "**/README.*"
+      - "**/CONTRIBUTING.*"
+
+env:
+  BUILD_TYPE: Release
+  INSTALL_LOCATION: ".local"
+
+jobs:
+  build:
+    runs-on: windows-2022
+    if: "!contains(github.event.head_commit.message, '[skip ci]') && !contains(github.event.head_commit.message, '[ci skip]')"
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: ./.github/build.yml
+        with:
+          cmakePreset: ci-msvc

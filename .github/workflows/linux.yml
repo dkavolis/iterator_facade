@@ -1,0 +1,43 @@
+name: linux
+
+on:
+  push:
+    branches: [master]
+    paths-ignore:
+      - "**/README.*"
+      - "**/CONTRIBUTING.*"
+  pull_request:
+    branches: [master]
+    paths-ignore:
+      - "**/README.*"
+      - "**/CONTRIBUTING.*"
+
+env:
+  BUILD_TYPE: Release
+  INSTALL_LOCATION: ".local"
+
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+    name: ${{ github.workflow }}-${{ matrix.cxx }}
+    if: "!contains(github.event.head_commit.message, '[skip ci]') && !contains(github.event.head_commit.message, '[ci skip]')"
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - cxx: g++-11
+            install: sudo apt install g++-11
+          # clang-13 is not available and clang-12 doesn't work
+          # - install: sudo apt install clang-13 libc++-13-dev libc++abi-13-dev
+          #   cxxflags: -stdlib=libc++
+          #   cxx: clang++-13
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: ./.github/build.yml
+        with:
+          cmakePreset: ci-linux
+          cxx: ${{ matrix.cxx }}
+          install: ${{ matrix.install }}
+          cxxflags: ${{ matrix.cxxflags }}
