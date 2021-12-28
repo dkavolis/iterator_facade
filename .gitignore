@@ -370,3 +370,5 @@ CMakeUserPresets.json
 
 # JetBrains IDEs
 .idea
+
+!/.github/build

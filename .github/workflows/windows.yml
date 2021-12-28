@@ -26,6 +26,6 @@ jobs:
         with:
           submodules: true
 
-      - uses: ./.github/build.yml
+      - uses: ./.github/build
         with:
           cmakePreset: ci-msvc
