@@ -79,8 +79,8 @@ Usage
     * ``constexpr auto T::operator--() noexcept(...) -> T&``
     * ``constexpr auto T::operator--(int) noexcept(...) -> T``
 * ``distance_to`` will additionally enable
-    * ``constexpr friend auto T::operator-(T const&, sentinel&) noexcept(...) -> difference_type``
-    * ``constexpr friend auto T::operator(sentinel&, T const&) noexcept(...) -> difference_type``
+    * ``constexpr friend auto T::operator-(T const&, sentinel const&) noexcept(...) -> difference_type``
+    * ``constexpr friend auto T::operator(sentinel const&, T const&) noexcept(...) -> difference_type``
     * ``constexpr friend auto T::operator<=>(T const&, sentinel const&) noexcept(...)```
 * ``advance`` will additionally enable
     * ``constexpr friend auto T::operator+(T, difference_type) noexcept(...) -> T``
