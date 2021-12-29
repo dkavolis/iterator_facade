@@ -47,23 +47,26 @@ Usage
 .. code-block:: c++
 
     struct my_iterator : iterf::iterator_facade<my_iterator> {
+        using difference_type = std::iter_difference_t<iterator>;
+        using reference = std::iter_reference_t<iterator>;
+
         iterator it;
 
         // Required:
-        constexpr auto dereference() const noexcept(...) -> reference { return *it }
-        constexpr void increment() noexcept(...) { ++it; }
+        constexpr auto dereference() const noexcept(noexcept(*it)) -> reference { return *it; }
+        constexpr void increment() noexcept(noexcept(*it)) { ++it; }
 
         // For forward iterators:
-        template <std::sentinel_for<iterator> T>
-        constexpr auto equals(T other) const noexcept(...) -> bool { return it == other; }
+        constexpr auto equals(std::sentinel_for<iterator> auto other) const noexcept(noexcept(it == other)) -> bool { return it == other; }
+        constexpr auto equals(my_iterator other) const noexcept(noexcept(it == other.it)) -> bool { return it == other.it; }
 
         // For bidirectional operators:
-        constexpr void decrement() noexcept(...) { --it; }
+        constexpr void decrement() noexcept(noexcept(--it;)) { --it; }
 
         // For random access iterators:
-        template <std::sentinel_for<iterator> T>
-        constexpr auto distance_to(T lhs) const noexcept(...) -> difference_type { return lhs - it; }
-        constexpr void advance(difference_type n) noexcept(...) { it += n; }
+        constexpr auto distance_to(std::sentinel_for<iterator> auto lhs) const noexcept(noexcept(lhs - it)) -> difference_type { return lhs - it; }
+        constexpr auto distance_to(my_iterator lhs) const noexcept(noexcept(lhs.it - it)) -> difference_type { return lhs.it - it; }
+        constexpr void advance(difference_type n) noexcept(noexcept(it += n)) { it += n; }
     };
 
 | Namespace can be customized by setting ``ITERF_NAMESPACE`` before including the header
