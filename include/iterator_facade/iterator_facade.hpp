@@ -513,13 +513,13 @@ concept iterator_facade_subclass = detail::is_base_of_facade<T>::value;
 
 }  // namespace ITERF_NAMESPACE
 
-template <iterf::iterator_facade_subclass Iter>
+template <ITERF_NAMESPACE ::iterator_facade_subclass Iter>
 struct std::iterator_traits<Iter> {
   using reference = decltype(*std::declval<Iter&>());
   using pointer = decltype(std::declval<Iter&>().operator->());
-  using difference_type = iterf::detail::inferred_difference_type_t<Iter>;
-  using value_type = iterf::detail::inferred_value_type_t<Iter>;
+  using difference_type = ITERF_NAMESPACE ::detail::inferred_difference_type_t<Iter>;
+  using value_type = ITERF_NAMESPACE ::detail::inferred_value_type_t<Iter>;
 
-  using iterator_category = iterf::detail::iterator_category_t<Iter>;
-  using iterator_concept = iterf::detail::iterator_concept_t<Iter>;
+  using iterator_category = ITERF_NAMESPACE ::detail::iterator_category_t<Iter>;
+  using iterator_concept = ITERF_NAMESPACE ::detail::iterator_concept_t<Iter>;
 };
