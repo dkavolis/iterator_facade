@@ -5,7 +5,7 @@ iterator_facade
 .. image:: https://github.com/dkavolis/iterator_facade/actions/workflows/windows.yml/badge.svg
         :target: https://github.com/dkavolis/iterator_facade/actions/workflows/windows.yml/badge.svg
         :alt: Github Workflow Windows Build iterator_facade Status
-        
+
 .. image:: https://github.com/dkavolis/iterator_facade/actions/workflows/linux.yml/badge.svg
         :target: https://github.com/dkavolis/iterator_facade/actions/workflows/linux.yml/badge.svg
         :alt: Github Workflow Linux Build iterator_facade Status
@@ -44,8 +44,6 @@ Copy paste the single header into your project
 Usage
 -----
 
-
-
 .. code-block:: c++
 
     struct my_iterator : iterf::iterator_facade<my_iterator> {
@@ -68,6 +66,7 @@ Usage
         constexpr void advance(difference_type n) noexcept(...) { it += n; }
     };
 
+| Namespace can be customized by setting ``ITERF_NAMESPACE`` before including the header
 | ``my_iterator::dereference()`` is not required to return lvalue references. However, the value returned should not be a reference to a value owned by the iterator itself as it can result in dangling references.
 | ``my_iterator::advance(difference_type)`` will be used in place of ``my_iterator::increment()`` or ``my_iterator::decrement()`` if any of them are not defined.
 | ``my_iterator::distance_to(T)`` will be used in place of ``my_iterator::equals(T)`` if it is not defined.

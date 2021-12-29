@@ -1,3 +1,12 @@
+// iterator_facade by D. Kavolis
+//
+// To the extent possible under law, the person who associated CC0 with
+// iterator_facade has waived all copyright and related or neighboring rights
+// to iterator_facade.
+//
+// You should have received a copy of the CC0 legalcode along with this
+// work.  If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
+
 #pragma once
 
 #include <concepts>
@@ -12,8 +21,12 @@
 #  define ITERF_ALWAYS_INLINE inline
 #endif
 
+#ifndef ITERF_NAMESPACE
+#  define ITERF_NAMESPACE iterf
+#endif
+
 // https://vector-of-bool.github.io/2020/06/13/cpp20-iter-facade.html
-namespace iterf {
+namespace ITERF_NAMESPACE {
 
 namespace detail {
 
@@ -498,7 +511,7 @@ struct is_base_of_facade {
 template <class T>
 concept iterator_facade_subclass = detail::is_base_of_facade<T>::value;
 
-}  // namespace iterf
+}  // namespace ITERF_NAMESPACE
 
 template <iterf::iterator_facade_subclass Iter>
 struct std::iterator_traits<Iter> {
