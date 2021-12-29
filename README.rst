@@ -46,6 +46,10 @@ Usage
 
 .. code-block:: c++
 
+    #include <iterator>
+
+    #include <iterator_facade/iterator_facade>
+
     struct my_iterator : iterf::iterator_facade<my_iterator> {
         using difference_type = std::iter_difference_t<iterator>;
         using reference = std::iter_reference_t<iterator>;
