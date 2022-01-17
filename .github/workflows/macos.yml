@@ -19,7 +19,15 @@ env:
 jobs:
   build:
     runs-on: macos-11
+    name: ${{ github.workflow }}-${{ matrix.cxx }}
     if: "!contains(github.event.head_commit.message, '[skip ci]') && !contains(github.event.head_commit.message, '[ci skip]')"
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - cxx: g++-11
+          - cxxflags: -stdlib=libc++
+            cxx: clang++-13
 
     steps:
       - uses: actions/checkout@v2
@@ -34,5 +42,6 @@ jobs:
       - uses: ./.github/build
         with:
           cmakePreset: ci-linux
-          cxx: g++-11
+          cxx: ${{ matrix.cxx }}
+          cxxflags: ${{ matrix.cxxflags }}
           threads: ${{ steps.number-of-threads.outputs.THREADS }}

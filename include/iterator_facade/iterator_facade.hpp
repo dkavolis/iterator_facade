@@ -312,8 +312,9 @@ class iterator_facade {
    *
    * @return Derived&
    */
-  ITERF_ALWAYS_INLINE constexpr auto operator++() noexcept(detail::has_nothrow_increment<self_type>)
-      -> self_type& requires detail::has_increment<self_type> {
+  template <class T = self_type>
+    requires(detail::has_increment<T>)
+  ITERF_ALWAYS_INLINE constexpr auto operator++() noexcept(detail::has_nothrow_increment<self_type>) -> self_type& {
     self().increment();
     return self();
   }
@@ -324,8 +325,9 @@ class iterator_facade {
    *
    * @return Derived&
    */
-  ITERF_ALWAYS_INLINE constexpr auto operator++() noexcept(detail::has_nothrow_advance<self_type, int>)
-      -> self_type& requires(!detail::has_increment<self_type> && detail::has_advance<self_type, int>) {
+  template <class T = self_type>
+    requires(!detail::has_increment<T> && detail::has_advance<T, int>)
+  ITERF_ALWAYS_INLINE constexpr auto operator++() noexcept(detail::has_nothrow_advance<self_type, int>) -> self_type& {
     self().advance(1);
     return self();
   }
@@ -335,8 +337,10 @@ class iterator_facade {
    *
    * @return Derived&
    */
-  [[nodiscard]] constexpr auto operator++(int) noexcept(std::is_nothrow_copy_constructible_v<self_type>&& noexcept(
-      ++(*this))) -> self_type requires(detail::has_increment<self_type> || detail::has_advance<self_type, int>) {
+  template <class T = self_type>
+    requires(detail::has_increment<T> || detail::has_advance<T, int>)
+  [[nodiscard]] constexpr auto operator++(int) noexcept(
+      std::is_nothrow_copy_constructible_v<self_type>&& noexcept(++(*this))) -> self_type {
     auto copy = self();
     ++(*this);
     return copy;
@@ -354,8 +358,9 @@ class iterator_facade {
    *
    * @return Derived&
    */
-  ITERF_ALWAYS_INLINE constexpr auto operator--() noexcept(detail::has_nothrow_decrement<self_type>)
-      -> self_type& requires detail::has_decrement<self_type> {
+  template <class T = self_type>
+    requires(detail::has_decrement<T>)
+  ITERF_ALWAYS_INLINE constexpr auto operator--() noexcept(detail::has_nothrow_decrement<self_type>) -> self_type& {
     self().decrement();
     return self();
   }
@@ -366,8 +371,9 @@ class iterator_facade {
    *
    * @return Derived&
    */
-  ITERF_ALWAYS_INLINE constexpr auto operator--() noexcept(detail::has_nothrow_advance<self_type, int>)
-      -> self_type& requires(!detail::has_decrement<self_type> && detail::has_advance<self_type, int>) {
+  template <class T = self_type>
+    requires(!detail::has_decrement<T> && detail::has_advance<T, int>)
+  ITERF_ALWAYS_INLINE constexpr auto operator--() noexcept(detail::has_nothrow_advance<self_type, int>) -> self_type& {
     self().advance(-1);
     return self();
   }
@@ -377,8 +383,10 @@ class iterator_facade {
    *
    * @return Derived&
    */
-  [[nodiscard]] constexpr auto operator--(int) noexcept(std::is_nothrow_copy_constructible_v<self_type>&& noexcept(
-      --(*this))) -> self_type requires(detail::has_decrement<self_type> || detail::has_advance<self_type, int>) {
+  template <class T = self_type>
+    requires(detail::has_decrement<T> || detail::has_advance<T, int>)
+  [[nodiscard]] constexpr auto operator--(int) noexcept(
+      std::is_nothrow_copy_constructible_v<self_type>&& noexcept(--(*this))) -> self_type {
     auto copy = self();
     ++(*this);
     return copy;
@@ -424,7 +432,7 @@ class iterator_facade {
     return left = left - off;
   }
 
-  template <detail::advance_type_arg<self_type> D>
+  template <class T = self_type, detail::advance_type_arg<T> D>
   [[nodiscard]] ITERF_ALWAYS_INLINE constexpr auto operator[](D off) const
       noexcept(detail::has_nothrow_advance<self_type, D>&& detail::has_nothrow_dereference<self_type>)
           -> decltype(auto) {
