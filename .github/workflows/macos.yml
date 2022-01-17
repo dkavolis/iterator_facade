@@ -26,8 +26,8 @@ jobs:
       matrix:
         include:
           - cxx: g++-11
-          - cxxflags: -stdlib=libc++
-            cxx: clang++
+          - cxx: clang++
+            # cxxflags: -stdlib=libc++
 
     steps:
       - uses: actions/checkout@v2
