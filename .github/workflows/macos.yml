@@ -27,7 +27,7 @@ jobs:
         include:
           - cxx: g++-11
           - cxxflags: -stdlib=libc++
-            cxx: clang++-13
+            cxx: clang++
 
     steps:
       - uses: actions/checkout@v2
