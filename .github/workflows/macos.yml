@@ -26,8 +26,9 @@ jobs:
       matrix:
         include:
           - cxx: g++-11
-          - cxx: clang++
-            # cxxflags: -stdlib=libc++
+          # AppleClang 13.0 doesn't work
+          # - cxx: clang++
+          #   cxxflags: -stdlib=libc++
 
     steps:
       - uses: actions/checkout@v2
