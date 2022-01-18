@@ -22,7 +22,7 @@
 #endif
 
 #ifndef ITERF_NAMESPACE
-#  define ITERF_NAMESPACE iterf
+#  define ITERF_NAMESPACE iterator_facade
 #endif
 
 // https://vector-of-bool.github.io/2020/06/13/cpp20-iter-facade.html

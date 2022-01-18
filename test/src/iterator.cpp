@@ -1,7 +1,7 @@
 #include <catch2/catch.hpp>
 #include <iterator_facade/iterator_facade.hpp>
 
-namespace iterf {
+namespace iterator_facade {
 struct options {
   bool increment = true;
   bool equality = true;

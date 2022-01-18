@@ -49,7 +49,8 @@ Usage
 
     #include <iterator>
 
-    #include <iterator_facade/iterator_facade>
+    #include <iterator_facade/iterator_facade.hpp>
+    namespace iterf = iterator_facade;
 
     struct my_iterator : iterf::iterator_facade<my_iterator> {
         using difference_type = std::iter_difference_t<iterator>;
@@ -80,7 +81,7 @@ Usage
 | ``my_iterator::distance_to(T)`` will be used in place of ``my_iterator::equals(T)`` if it is not defined.
 |
 
-``iterf::iterator_facade<T>`` will provide operators based on defined subclass methods:
+``iterator_facade::iterator_facade<T>`` will provide operators based on defined subclass methods:
 
 * ``dereference`` will enable
     * ``constexpr auto T::operator*() const noexcept(...) -> reference``
