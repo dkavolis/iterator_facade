@@ -209,7 +209,7 @@ template <class T>
  *    *   <code>void decrement() </code> <br>
  *
  *    Random access: <br>
- *    *   <code>auto distance_to(T|sentinel) const -> difference_type </code> (can replace equal) <br>
+ *    *   <code>auto distance_to(T|sized_sentinel) const -> difference_type </code> (can replace equal) <br>
  *    *   <code>void advance(difference_type) </code> (can replace increment/decrement) <br>
  *
  * @tparam Contiguous true if the derived iterator is contiguous, otherwise false since it cannot be inferred
@@ -518,6 +518,42 @@ struct is_base_of_facade {
  */
 template <class T>
 concept iterator_facade_subclass = detail::is_base_of_facade<T>::value;
+
+// clang-format off
+template <class T>
+concept nothrow_dereference = std::input_or_output_iterator<T> && requires(T iter) {
+  { *iter } noexcept;
+};
+
+template <class T>
+concept nothrow_increment = std::input_or_output_iterator<T> && requires(T iter) {
+  { ++iter } noexcept;
+};
+
+template <class T>
+concept nothrow_decrement = std::bidirectional_iterator<T> && requires(T iter) {
+  { --iter } noexcept;
+};
+
+template <class T>
+concept nothrow_advance = std::random_access_iterator<T> && requires(T iter, std::iter_difference_t<T> n) {
+  { iter += n} noexcept;
+};
+
+template <class T, class S = T>
+concept nothrow_distance_to = std::random_access_iterator<T> && std::sized_sentinel_for<S, T> &&
+    requires(T lhs, S rhs) {
+  { rhs - lhs } noexcept;
+};
+
+template <class T, class S = T>
+concept nothrow_equals = std::forward_iterator<T> && std::sentinel_for<S, T> && requires(T lhs, S rhs) {
+  { rhs == lhs } noexcept;
+  { lhs == rhs } noexcept;
+  { rhs != lhs } noexcept;
+  { lhs != rhs } noexcept;
+};
+// clang-format on
 
 }  // namespace ITERF_NAMESPACE
 

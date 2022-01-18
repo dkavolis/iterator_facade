@@ -152,6 +152,13 @@ TEST_CASE("noexcept are propagated", "[noexcept]") {
     STATIC_REQUIRE(noexcept(it + 5));
     STATIC_REQUIRE(noexcept(it - 5));
     STATIC_REQUIRE(noexcept(it - it));
+
+    STATIC_REQUIRE(nothrow_dereference<iterator<random_access_options>>);
+    STATIC_REQUIRE(nothrow_increment<iterator<random_access_options>>);
+    STATIC_REQUIRE(nothrow_equals<iterator<random_access_options>>);
+    STATIC_REQUIRE(nothrow_decrement<iterator<random_access_options>>);
+    STATIC_REQUIRE(nothrow_advance<iterator<random_access_options>>);
+    STATIC_REQUIRE(nothrow_distance_to<iterator<random_access_options>>);
   }
 
   SECTION("throw") {
@@ -170,6 +177,13 @@ TEST_CASE("noexcept are propagated", "[noexcept]") {
     STATIC_REQUIRE_FALSE(noexcept(it + 5));
     STATIC_REQUIRE_FALSE(noexcept(it - 5));
     STATIC_REQUIRE_FALSE(noexcept(it - it));
+
+    STATIC_REQUIRE_FALSE(nothrow_dereference<iterator<throw_options>>);
+    STATIC_REQUIRE_FALSE(nothrow_increment<iterator<throw_options>>);
+    STATIC_REQUIRE_FALSE(nothrow_equals<iterator<throw_options>>);
+    STATIC_REQUIRE_FALSE(nothrow_decrement<iterator<throw_options>>);
+    STATIC_REQUIRE_FALSE(nothrow_advance<iterator<throw_options>>);
+    STATIC_REQUIRE_FALSE(nothrow_distance_to<iterator<throw_options>>);
   }
 }
 
@@ -312,4 +326,4 @@ TEST_CASE("iterators are comparable", "[subtract]") {
   }
 }
 
-}  // namespace iterf
+}  // namespace iterator_facade
