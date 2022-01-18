@@ -50,29 +50,64 @@ Usage
     #include <iterator>
 
     #include <iterator_facade/iterator_facade.hpp>
+
     namespace iterf = iterator_facade;
 
-    struct my_iterator : iterf::iterator_facade<my_iterator> {
-        using difference_type = std::iter_difference_t<iterator>;
-        using reference = std::iter_reference_t<iterator>;
+    template <std::input_or_output_iterator Iter>
+    class my_iterator : public iterf:iterator_facade<my_iterator<Iter>> {
+        template <std::input_or_output_iterator>
+        friend class my_iterator;
 
-        iterator it;
+    public:
+        using value_type = std::iter_value_t<Iter>;
+        using reference = std::iter_reference_t<Iter>;
+        using difference_type = std::iter_difference_t<Iter>;
+
+        constexpr my_iterator() noexcept(std::is_nothrow_constructible_v<Iter>) = default;
+        constexpr my_iterator(Iter iter) noexcept(std::is_nothrow_move_constructible_v<Iter>) : iter_(std::move(iter)) {}
+
+        template <class U>
+            requires(std::constructible_from<Iter, U> && !std::same_as<Iter, U>)
+        constexpr my_iterator(my_iterator<U> const& other) noexcept(std::is_nothrow_constructible_v<Iter, U>)
+            : iter_(other.iter_) {}
 
         // Required:
-        constexpr auto dereference() const noexcept(noexcept(*it)) -> reference { return *it; }
-        constexpr void increment() noexcept(noexcept(*it)) { ++it; }
+        [[nodiscard]] constexpr auto dereference() const noexcept(iterf::nothrow_dereference<Iter>) -> reference { return *iter_; }
+        constexpr void increment() noexcept(iterf::nothrow_increment<Iter>) { ++iter_; }
 
         // For forward iterators:
-        constexpr auto equals(std::sentinel_for<iterator> auto other) const noexcept(noexcept(it == other)) -> bool { return it == other; }
-        constexpr auto equals(my_iterator other) const noexcept(noexcept(it == other.it)) -> bool { return it == other.it; }
+        template <std::sentinel_for<Iter> S>
+        [[nodiscard]] constexpr auto equals(S const& sentinel) const noexcept(iterf::nothrow_equals<Iter, S>)
+            -> bool requires std::forward_iterator<Iter> {
+            return iter_ == sentinel;
+        }
+        template <std::sentinel_for<Iter> S>
+        [[nodiscard]] constexpr auto equals(my_iterator<S> const& sentinel) const noexcept(iterf::nothrow_equals<Iter, S>)
+            -> bool requires std::forward_iterator<Iter> {
+            return iter_ == sentinel.iter_;
+        }
 
-        // For bidirectional operators:
-        constexpr void decrement() noexcept(noexcept(--it)) { --it; }
+        // For bidirectional iterators:
+        constexpr void decrement() noexcept(iterf::nothrow_decrement<Iter>) requires std::bidirectional_iterator<Iter> { --iter_; }
 
         // For random access iterators:
-        constexpr auto distance_to(std::sentinel_for<iterator> auto lhs) const noexcept(noexcept(lhs - it)) -> difference_type { return lhs - it; }
-        constexpr auto distance_to(my_iterator lhs) const noexcept(noexcept(lhs.it - it)) -> difference_type { return lhs.it - it; }
-        constexpr void advance(difference_type n) noexcept(noexcept(it += n)) { it += n; }
+        constexpr void advance(difference_type n) noexcept(iterf::nothrow_advance<Iter>) requires std::random_access_iterator<Iter> {
+            iter_ += n;
+        }
+
+        template <std::sized_sentinel_for<Iter> S>
+        [[nodiscard]] constexpr auto distance_to(S const& sentinel) const noexcept(iterf::nothrow_distance_to<Iter, S>)
+            -> difference_type requires std::random_access_iterator<Iter> {
+            return sentinel - iter_;
+        }
+        template <std::sized_sentinel_for<Iter> S>
+        [[nodiscard]] constexpr auto distance_to(my_iterator<S> const& sentinel) const noexcept(iterf::nothrow_distance_to<Iter, S>)
+            -> difference_type requires std::random_access_iterator<Iter> {
+            return sentinel.iter_ - iter_;
+        }
+
+    private:
+        Iter iter_;
     };
 
 | Namespace can be customized by setting ``ITERF_NAMESPACE`` before including the header
@@ -95,8 +130,8 @@ Usage
     * ``constexpr auto T::operator--() noexcept(...) -> T&``
     * ``constexpr auto T::operator--(int) noexcept(...) -> T``
 * ``distance_to`` will additionally enable
-    * ``constexpr friend auto T::operator-(T const&, sentinel const&) noexcept(...) -> difference_type``
-    * ``constexpr friend auto T::operator(sentinel const&, T const&) noexcept(...) -> difference_type``
+    * ``constexpr friend auto T::operator-(T const&, sized_sentinel const&) noexcept(...) -> difference_type``
+    * ``constexpr friend auto T::operator-(sized_sentinel const&, T const&) noexcept(...) -> difference_type``
     * ``constexpr friend auto T::operator<=>(T const&, sentinel const&) noexcept(...)```
 * ``advance`` will additionally enable
     * ``constexpr friend auto T::operator+(T, difference_type) noexcept(...) -> T``
