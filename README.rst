@@ -148,5 +148,5 @@ This package was created with cookietemple_ using Cookiecutter_.
 
 .. _COOKIETEMPLE: https://cookietemple.com
 .. _Cookiecutter: https://github.com/audreyr/cookiecutter
-.. _Clang bug: https://bugs.llvm.org/show_bug.cgi?id=44833
+.. _Clang bug: https://github.com/llvm/llvm-project/issues/44178
 .. _Workaround: https://stackoverflow.com/a/66392670/13262469
