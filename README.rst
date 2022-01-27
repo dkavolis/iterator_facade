@@ -77,11 +77,6 @@ Usage
 
         // For forward iterators:
         template <std::sentinel_for<Iter> S>
-        [[nodiscard]] constexpr auto equals(S const& sentinel) const noexcept(iterf::nothrow_equals<Iter, S>)
-            -> bool requires std::forward_iterator<Iter> {
-            return iter_ == sentinel;
-        }
-        template <std::sentinel_for<Iter> S>
         [[nodiscard]] constexpr auto equals(my_iterator<S> const& sentinel) const noexcept(iterf::nothrow_equals<Iter, S>)
             -> bool requires std::forward_iterator<Iter> {
             return iter_ == sentinel.iter_;
@@ -95,11 +90,6 @@ Usage
             iter_ += n;
         }
 
-        template <std::sized_sentinel_for<Iter> S>
-        [[nodiscard]] constexpr auto distance_to(S const& sentinel) const noexcept(iterf::nothrow_distance_to<Iter, S>)
-            -> difference_type requires std::random_access_iterator<Iter> {
-            return sentinel - iter_;
-        }
         template <std::sized_sentinel_for<Iter> S>
         [[nodiscard]] constexpr auto distance_to(my_iterator<S> const& sentinel) const noexcept(iterf::nothrow_distance_to<Iter, S>)
             -> difference_type requires std::random_access_iterator<Iter> {
