@@ -134,6 +134,14 @@ concept has_nothrow_dereference = requires(T const& it) {
   { it.dereference() } noexcept;
 };
 
+template <class T>
+concept lvalue_reference = std::is_lvalue_reference_v<T>;
+
+template <class T>
+concept dereferences_lvalue = requires (T const& it) {
+  { it.dereference() } -> lvalue_reference;
+};
+
 // We can meet "random access" if it provides
 // both .advance() and .distance_to()
 template <typename T>
@@ -177,9 +185,12 @@ using iterator_category_t =
                                                              std::input_iterator_tag>>>;
 
 // contiguous_iterator is a special case of random_access and output iterator is deduced by STL
+template <class T>
+concept satisfies_contiguous = meets_random_access<T> && decls_contiguous<T> && dereferences_lvalue<T>;
+
 template <class Iter>
 using iterator_concept_t =
-    std::conditional_t<decls_contiguous<Iter>, std::contiguous_iterator_tag, iterator_category_t<Iter>>;
+    std::conditional_t<satisfies_contiguous<Iter>, std::contiguous_iterator_tag, iterator_category_t<Iter>>;
 
 template <class T>
 [[nodiscard]] ITERF_ALWAYS_INLINE constexpr auto arrow_helper(T& t) noexcept -> T& {
@@ -567,6 +578,28 @@ concept nothrow_equals = std::forward_iterator<T> && std::sentinel_for<S, T> && 
 };
 // clang-format on
 
+namespace ITERATOR_FACADE_DETAIL_NS {
+  template <class NewFirst, class T>
+  struct replace_first_param {
+    using type = T;
+  };
+
+  template <class NewFirst, template <class, class...> class T, class First, class... Rest>
+  struct replace_first_param<NewFirst, T<First, Rest...>> {
+    using type = T<NewFirst, Rest...>;
+  };
+
+  template <class T, class Other, class = void>
+  struct rebind_alias {
+    using type = typename replace_first_param<Other, T>::type;
+  };
+
+  template <class T, class Other>
+  struct rebind_alias<T, Other, std::void_t<typename T::template rebind<Other>>> {
+    using type = typename T::template rebind<Other>;
+  };
+}  // namespace ITERATOR_FACADE_DETAIL_NS
+
 }  // namespace ITERATOR_FACADE_NS
 
 template <ITERATOR_FACADE_NS ::iterator_facade_subclass Iter>
@@ -578,4 +611,22 @@ struct std::iterator_traits<Iter> {
 
   using iterator_category = ITERATOR_FACADE_NS ::ITERATOR_FACADE_DETAIL_NS::iterator_category_t<Iter>;
   using iterator_concept = ITERATOR_FACADE_NS ::ITERATOR_FACADE_DETAIL_NS::iterator_concept_t<Iter>;
+};
+
+// specialization for contiguous iterators since the standard ends in compile error if Iter is not a template
+template <ITERATOR_FACADE_NS ::iterator_facade_subclass Iter>
+  requires(ITERATOR_FACADE_NS::ITERATOR_FACADE_DETAIL_NS::satisfies_contiguous<Iter>)
+struct std::pointer_traits<Iter> {
+  using pointer = Iter;
+  using element_type = std::iter_value_t<Iter>;
+  using difference_type = std::iter_difference_t<Iter>;
+
+  template <class Other>
+  using rebind = typename ITERATOR_FACADE_NS::ITERATOR_FACADE_DETAIL_NS::rebind_alias<Iter, Other>::type;
+
+  using reference = conditional_t<is_void_v<element_type>, char, element_type>&;
+
+  [[nodiscard]] static pointer pointer_to(reference value) noexcept(noexcept(Iter::pointer_to(value))) {
+    return Iter::pointer_to(value);
+  }
 };

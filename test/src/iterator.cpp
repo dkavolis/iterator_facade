@@ -71,6 +71,21 @@ struct iterator : iterator_facade<iterator<Options>> {
   constexpr void advance(std::ptrdiff_t delta) noexcept(Options.nothrow) requires(Options.advance) { value.i += delta; }
 };
 
+struct contiguous : iterator_facade<contiguous, true> {
+  using Iter = int const*;
+  using reference = std::iter_reference_t<Iter>;
+  using difference_type = std::iter_difference_t<Iter>;
+
+  Iter ptr;
+
+  [[nodiscard]] constexpr auto dereference() const noexcept -> reference { return *ptr; }
+  constexpr void increment() noexcept { ++ptr; }
+  [[nodiscard]] constexpr auto equals(contiguous rhs) const noexcept -> bool { return ptr == rhs.ptr; }
+  constexpr void decrement() noexcept { --ptr; }
+  [[nodiscard]] constexpr auto distance_to(contiguous rhs) const noexcept -> difference_type { return rhs.ptr - ptr; }
+  constexpr void advance(difference_type delta) noexcept { ptr += delta; }
+};
+
 TEST_CASE("Iterator concepts", "[concepts]") {
   SECTION("Input iterator") {
     using It = iterator<input_options>;
@@ -133,6 +148,31 @@ TEST_CASE("Iterator concepts", "[concepts]") {
     STATIC_REQUIRE(!std::contiguous_iterator<It>);
 
     STATIC_REQUIRE(std::sentinel_for<sentinel, It>);
+  }
+
+  SECTION("Contiguous iterator") {
+    using It = contiguous;
+
+    STATIC_REQUIRE(std::same_as<std::iter_reference_t<It>, int const&>);
+    STATIC_REQUIRE(std::same_as<decltype(std::declval<It>().operator->()), int const*>);
+    STATIC_REQUIRE(std::same_as<std::iterator_traits<It>::iterator_category, std::random_access_iterator_tag>);
+    STATIC_REQUIRE(std::same_as<std::iterator_traits<It>::iterator_concept, std::contiguous_iterator_tag>);
+    STATIC_REQUIRE(std::input_iterator<It>);
+    STATIC_REQUIRE(std::forward_iterator<It>);
+    STATIC_REQUIRE(std::bidirectional_iterator<It>);
+    STATIC_REQUIRE(std::random_access_iterator<It>);
+
+    // because of how std::pointer_traits work contiguous_iterator only works for iterator templates... WAT?
+    STATIC_REQUIRE(std::contiguous_iterator<It>);
+
+    STATIC_REQUIRE(std::sentinel_for<It, It>);
+
+    constexpr static int array[]{1, 2, 3, 4, 5};
+    constexpr static It begin{{}, &array[0]};
+    constexpr static It end{{}, &array[4]};
+
+    STATIC_REQUIRE(std::to_address(begin) == &array[0]);
+    STATIC_REQUIRE(std::to_address(end) == &array[4]);
   }
 }
 
