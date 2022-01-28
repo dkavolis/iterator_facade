@@ -21,14 +21,18 @@
 #  define ITERF_ALWAYS_INLINE inline
 #endif
 
-#ifndef ITERF_NAMESPACE
-#  define ITERF_NAMESPACE iterator_facade
+#ifndef ITERATOR_FACADE_NS
+#  define ITERATOR_FACADE_NS iterator_facade
+#endif
+
+#ifndef ITERATOR_FACADE_DETAIL_NS
+#  define ITERATOR_FACADE_DETAIL_NS detail
 #endif
 
 // https://vector-of-bool.github.io/2020/06/13/cpp20-iter-facade.html
-namespace ITERF_NAMESPACE {
+namespace ITERATOR_FACADE_NS {
 
-namespace detail {
+namespace ITERATOR_FACADE_DETAIL_NS {
 
 /// \brief Wrapper for rvalue return values when expecting an lvalue address
 /// \tparam T
@@ -188,7 +192,7 @@ template <class T>
   return {std::move(t)};
 }
 
-}  // namespace detail
+}  // namespace ITERATOR_FACADE_DETAIL_NS
 
 /** @defgroup facade Iterator facade
  *  @{
@@ -244,7 +248,7 @@ class iterator_facade {
    * @return decltype(Derived{}.dereference())
    */
   [[nodiscard]] ITERF_ALWAYS_INLINE constexpr auto operator*() const
-      noexcept(detail::has_nothrow_dereference<self_type>) -> decltype(auto) {
+      noexcept(ITERATOR_FACADE_DETAIL_NS::has_nothrow_dereference<self_type>) -> decltype(auto) {
     return self().dereference();
   }
 
@@ -254,7 +258,7 @@ class iterator_facade {
    * @return Pointer or arrow proxy to the return value of <code>Derived::dereference() const</code>
    */
   [[nodiscard]] ITERF_ALWAYS_INLINE constexpr auto
-  operator->() const noexcept((detail::has_nothrow_dereference<self_type>&& noexcept(detail::arrow_helper(**this))))
+  operator->() const noexcept((ITERATOR_FACADE_DETAIL_NS::has_nothrow_dereference<self_type> && std::is_nothrow_move_constructible_v<decltype(**this)>))
       -> decltype(auto) {
     return detail::arrow_helper(**this);
   }
@@ -275,9 +279,9 @@ class iterator_facade {
    * @return true if lhs == rhs
    * @return false otherwise
    */
-  template <detail::equality_comparable<self_type> T>
+  template <ITERATOR_FACADE_DETAIL_NS::equality_comparable<self_type> T>
   [[nodiscard]] ITERF_ALWAYS_INLINE constexpr auto friend operator==(self_type const& lhs, T const& rhs) noexcept(
-      detail::nothrow_equality_comparable<T, self_type>) -> bool {
+      ITERATOR_FACADE_DETAIL_NS::nothrow_equality_comparable<T, self_type>) -> bool {
     return lhs.equals(rhs);
   }
 
@@ -291,12 +295,12 @@ class iterator_facade {
    * @return true if lhs == rhs
    * @return false otherwise
    */
-  template <detail::has_distance_to<self_type> T>
+  template <ITERATOR_FACADE_DETAIL_NS::has_distance_to<self_type> T>
 #ifndef ITERF_DOXYGEN_RUNNING
-    requires(!detail::equality_comparable<T, self_type>)
+    requires(!ITERATOR_FACADE_DETAIL_NS::equality_comparable<T, self_type>)
 #endif
   [[nodiscard]] ITERF_ALWAYS_INLINE constexpr auto friend operator==(self_type const& lhs, T const& rhs) noexcept(
-      detail::has_nothrow_distance_to<T, self_type>) -> bool {
+      ITERATOR_FACADE_DETAIL_NS::has_nothrow_distance_to<T, self_type>) -> bool {
     return lhs.distance_to(rhs) == 0;
   }
 
@@ -313,8 +317,9 @@ class iterator_facade {
    * @return Derived&
    */
   template <class T = self_type>
-    requires(detail::has_increment<T>)
-  ITERF_ALWAYS_INLINE constexpr auto operator++() noexcept(detail::has_nothrow_increment<self_type>) -> self_type& {
+    requires(ITERATOR_FACADE_DETAIL_NS::has_increment<T>)
+  ITERF_ALWAYS_INLINE constexpr auto operator++() noexcept(ITERATOR_FACADE_DETAIL_NS::has_nothrow_increment<self_type>)
+      -> self_type& {
     self().increment();
     return self();
   }
@@ -326,8 +331,9 @@ class iterator_facade {
    * @return Derived&
    */
   template <class T = self_type>
-    requires(!detail::has_increment<T> && detail::has_advance<T, int>)
-  ITERF_ALWAYS_INLINE constexpr auto operator++() noexcept(detail::has_nothrow_advance<self_type, int>) -> self_type& {
+    requires(!ITERATOR_FACADE_DETAIL_NS::has_increment<T> && ITERATOR_FACADE_DETAIL_NS::has_advance<T, int>)
+  ITERF_ALWAYS_INLINE constexpr auto operator++() noexcept(
+      ITERATOR_FACADE_DETAIL_NS::has_nothrow_advance<self_type, int>) -> self_type& {
     self().advance(1);
     return self();
   }
@@ -338,7 +344,7 @@ class iterator_facade {
    * @return Derived&
    */
   template <class T = self_type>
-    requires(detail::has_increment<T> || detail::has_advance<T, int>)
+    requires(ITERATOR_FACADE_DETAIL_NS::has_increment<T> || ITERATOR_FACADE_DETAIL_NS::has_advance<T, int>)
   [[nodiscard]] constexpr auto operator++(int) noexcept(
       std::is_nothrow_copy_constructible_v<self_type>&& noexcept(++(*this))) -> self_type {
     auto copy = self();
@@ -359,8 +365,9 @@ class iterator_facade {
    * @return Derived&
    */
   template <class T = self_type>
-    requires(detail::has_decrement<T>)
-  ITERF_ALWAYS_INLINE constexpr auto operator--() noexcept(detail::has_nothrow_decrement<self_type>) -> self_type& {
+    requires(ITERATOR_FACADE_DETAIL_NS::has_decrement<T>)
+  ITERF_ALWAYS_INLINE constexpr auto operator--() noexcept(ITERATOR_FACADE_DETAIL_NS::has_nothrow_decrement<self_type>)
+      -> self_type& {
     self().decrement();
     return self();
   }
@@ -372,8 +379,9 @@ class iterator_facade {
    * @return Derived&
    */
   template <class T = self_type>
-    requires(!detail::has_decrement<T> && detail::has_advance<T, int>)
-  ITERF_ALWAYS_INLINE constexpr auto operator--() noexcept(detail::has_nothrow_advance<self_type, int>) -> self_type& {
+    requires(!ITERATOR_FACADE_DETAIL_NS::has_decrement<T> && ITERATOR_FACADE_DETAIL_NS::has_advance<T, int>)
+  ITERF_ALWAYS_INLINE constexpr auto operator--() noexcept(
+      ITERATOR_FACADE_DETAIL_NS::has_nothrow_advance<self_type, int>) -> self_type& {
     self().advance(-1);
     return self();
   }
@@ -384,7 +392,7 @@ class iterator_facade {
    * @return Derived&
    */
   template <class T = self_type>
-    requires(detail::has_decrement<T> || detail::has_advance<T, int>)
+    requires(ITERATOR_FACADE_DETAIL_NS::has_decrement<T> || ITERATOR_FACADE_DETAIL_NS::has_advance<T, int>)
   [[nodiscard]] constexpr auto operator--(int) noexcept(
       std::is_nothrow_copy_constructible_v<self_type>&& noexcept(--(*this))) -> self_type {
     auto copy = self();
@@ -399,43 +407,41 @@ class iterator_facade {
    *  @{
    */
 
-  template <detail::advance_type_arg<self_type> D>
-  ITERF_ALWAYS_INLINE friend constexpr auto operator+=(self_type& self,
-                                                       D offset) noexcept(detail::has_nothrow_advance<self_type, D>)
-      -> self_type& {
+  template <ITERATOR_FACADE_DETAIL_NS::advance_type_arg<self_type> D>
+  ITERF_ALWAYS_INLINE friend constexpr auto operator+=(self_type& self, D offset) noexcept(
+      ITERATOR_FACADE_DETAIL_NS::has_nothrow_advance<self_type, D>) -> self_type& {
     self.advance(offset);
     return self;
   }
 
-  template <detail::advance_type_arg<self_type> D>
+  template <ITERATOR_FACADE_DETAIL_NS::advance_type_arg<self_type> D>
   [[nodiscard]] ITERF_ALWAYS_INLINE friend constexpr auto operator+(self_type left, D off) noexcept(
-      detail::has_nothrow_advance<self_type, D>) -> self_type {
+      ITERATOR_FACADE_DETAIL_NS::has_nothrow_advance<self_type, D>) -> self_type {
     return left += off;
   }
 
-  template <detail::advance_type_arg<self_type> D>
+  template <ITERATOR_FACADE_DETAIL_NS::advance_type_arg<self_type> D>
   [[nodiscard]] ITERF_ALWAYS_INLINE friend constexpr auto operator+(D off, self_type right) noexcept(
-      detail::has_nothrow_advance<self_type, D>) -> self_type {
+      ITERATOR_FACADE_DETAIL_NS::has_nothrow_advance<self_type, D>) -> self_type {
     return right += off;
   }
 
-  template <detail::advance_type_arg<self_type> D>
+  template <ITERATOR_FACADE_DETAIL_NS::advance_type_arg<self_type> D>
   [[nodiscard]] ITERF_ALWAYS_INLINE friend constexpr auto operator-(self_type left, D off) noexcept(
-      detail::has_nothrow_advance<self_type, D>) -> self_type {
+      ITERATOR_FACADE_DETAIL_NS::has_nothrow_advance<self_type, D>) -> self_type {
     return left + -off;
   }
 
-  template <detail::advance_type_arg<self_type> D>
-  ITERF_ALWAYS_INLINE friend constexpr auto operator-=(self_type& left,
-                                                       D off) noexcept(detail::has_nothrow_advance<self_type, D>)
-      -> self_type& {
+  template <ITERATOR_FACADE_DETAIL_NS::advance_type_arg<self_type> D>
+  ITERF_ALWAYS_INLINE friend constexpr auto operator-=(self_type& left, D off) noexcept(
+      ITERATOR_FACADE_DETAIL_NS::has_nothrow_advance<self_type, D>) -> self_type& {
     return left = left - off;
   }
 
-  template <class T = self_type, detail::advance_type_arg<T> D>
+  template <class T = self_type, ITERATOR_FACADE_DETAIL_NS::advance_type_arg<T> D>
   [[nodiscard]] ITERF_ALWAYS_INLINE constexpr auto operator[](D off) const
-      noexcept(detail::has_nothrow_advance<self_type, D>&& detail::has_nothrow_dereference<self_type>)
-          -> decltype(auto) {
+      noexcept(ITERATOR_FACADE_DETAIL_NS::has_nothrow_advance<self_type, D>&&
+                   ITERATOR_FACADE_DETAIL_NS::has_nothrow_dereference<self_type>) -> decltype(auto) {
     return (self() + off).dereference();
   }
 
@@ -454,9 +460,9 @@ class iterator_facade {
    * @param right
    * @return decltype(auto)
    */
-  template <detail::has_distance_to<self_type> T>
+  template <ITERATOR_FACADE_DETAIL_NS::has_distance_to<self_type> T>
   [[nodiscard]] ITERF_ALWAYS_INLINE friend constexpr auto operator-(const T& left, self_type const& right) noexcept(
-      detail::has_nothrow_distance_to<T, self_type>) -> decltype(auto) {
+      ITERATOR_FACADE_DETAIL_NS::has_nothrow_distance_to<T, self_type>) -> decltype(auto) {
     // Many many times must we `++right` to reach `left` ?
     return right.distance_to(left);
   }
@@ -469,12 +475,13 @@ class iterator_facade {
    * @param right sentinel
    * @return decltype(auto)
    */
-  template <detail::has_distance_to<self_type> Sentinel>
+  template <ITERATOR_FACADE_DETAIL_NS::has_distance_to<self_type> Sentinel>
 #ifndef ITERF_DOXYGEN_RUNNING
     requires(!std::same_as<Sentinel, self_type>)
 #endif
   [[nodiscard]] ITERF_ALWAYS_INLINE friend constexpr auto operator-(
-      const self_type& left, Sentinel const& right) noexcept(detail::has_nothrow_distance_to<Sentinel, self_type>)
+      const self_type& left,
+      Sentinel const& right) noexcept(ITERATOR_FACADE_DETAIL_NS::has_nothrow_distance_to<Sentinel, self_type>)
       -> decltype(auto) {
     return -(right - left);
   }
@@ -486,9 +493,10 @@ class iterator_facade {
    *  @{
    */
 
-  template <detail::has_distance_to<self_type> Sentinel>
+  template <ITERATOR_FACADE_DETAIL_NS::has_distance_to<self_type> Sentinel>
   [[nodiscard]] ITERF_ALWAYS_INLINE friend constexpr auto operator<=>(
-      const self_type& left, const Sentinel& right) noexcept(detail::has_nothrow_distance_to<Sentinel, self_type>) {
+      const self_type& left,
+      const Sentinel& right) noexcept(ITERATOR_FACADE_DETAIL_NS::has_nothrow_distance_to<Sentinel, self_type>) {
     return -left.distance_to(right) <=> 0;
   }
 
@@ -497,7 +505,7 @@ class iterator_facade {
 
 /** @} */  // end of facade
 
-namespace detail {
+namespace ITERATOR_FACADE_DETAIL_NS {
 
 template <class Derived>
 struct is_base_of_facade {
@@ -509,7 +517,7 @@ struct is_base_of_facade {
  public:
   constexpr static bool value = decltype(derives(std::declval<Derived>()))::value;
 };
-}  // namespace detail
+}  // namespace ITERATOR_FACADE_DETAIL_NS
 
 /**
  * @brief Check if type is derived from \ref iterator_facade
@@ -517,7 +525,7 @@ struct is_base_of_facade {
  * @tparam T type to check
  */
 template <class T>
-concept iterator_facade_subclass = detail::is_base_of_facade<T>::value;
+concept iterator_facade_subclass = ITERATOR_FACADE_DETAIL_NS::is_base_of_facade<T>::value;
 
 // clang-format off
 template <class T>
@@ -555,15 +563,15 @@ concept nothrow_equals = std::forward_iterator<T> && std::sentinel_for<S, T> && 
 };
 // clang-format on
 
-}  // namespace ITERF_NAMESPACE
+}  // namespace ITERATOR_FACADE_NS
 
-template <ITERF_NAMESPACE ::iterator_facade_subclass Iter>
+template <ITERATOR_FACADE_NS ::iterator_facade_subclass Iter>
 struct std::iterator_traits<Iter> {
   using reference = decltype(*std::declval<Iter&>());
   using pointer = decltype(std::declval<Iter&>().operator->());
-  using difference_type = ITERF_NAMESPACE ::detail::inferred_difference_type_t<Iter>;
-  using value_type = ITERF_NAMESPACE ::detail::inferred_value_type_t<Iter>;
+  using difference_type = ITERATOR_FACADE_NS ::ITERATOR_FACADE_DETAIL_NS::inferred_difference_type_t<Iter>;
+  using value_type = ITERATOR_FACADE_NS ::ITERATOR_FACADE_DETAIL_NS::inferred_value_type_t<Iter>;
 
-  using iterator_category = ITERF_NAMESPACE ::detail::iterator_category_t<Iter>;
-  using iterator_concept = ITERF_NAMESPACE ::detail::iterator_concept_t<Iter>;
+  using iterator_category = ITERATOR_FACADE_NS ::ITERATOR_FACADE_DETAIL_NS::iterator_category_t<Iter>;
+  using iterator_concept = ITERATOR_FACADE_NS ::ITERATOR_FACADE_DETAIL_NS::iterator_concept_t<Iter>;
 };
