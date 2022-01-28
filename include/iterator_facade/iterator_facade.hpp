@@ -258,9 +258,13 @@ class iterator_facade {
    * @return Pointer or arrow proxy to the return value of <code>Derived::dereference() const</code>
    */
   [[nodiscard]] ITERF_ALWAYS_INLINE constexpr auto
-  operator->() const noexcept((ITERATOR_FACADE_DETAIL_NS::has_nothrow_dereference<self_type> && std::is_nothrow_move_constructible_v<decltype(**this)>))
+  operator->() const noexcept((ITERATOR_FACADE_DETAIL_NS::has_nothrow_dereference<self_type> && noexcept(ITERATOR_FACADE_DETAIL_NS::arrow_helper(**this))))
       -> decltype(auto) {
-    return detail::arrow_helper(**this);
+    if constexpr (ITERATOR_FACADE_DETAIL_NS::dereferences_lvalue<self_type>) {
+      return std::addressof(**this);
+    } else {
+      return ITERATOR_FACADE_DETAIL_NS::arrow_helper(**this);
+    }
   }
 
   /** @} */  // end of dereference
