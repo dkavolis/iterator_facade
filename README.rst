@@ -36,6 +36,7 @@ Features
 * no need to specify any other types unlike ``boost::iterator_facade``
 * propagated ``noexcept``
 * works with sentinels
+* possible to wrap contiguous iterators and preserve contiguousness
 
 Install
 -------
@@ -54,7 +55,7 @@ Usage
     namespace iterf = iterator_facade;
 
     template <std::input_or_output_iterator Iter>
-    class my_iterator : public iterf:iterator_facade<my_iterator<Iter>> {
+    class my_iterator : public iterf:iterator_facade<my_iterator<Iter>, std::contiguous_iterator<Iter>> {
         template <std::input_or_output_iterator>
         friend class my_iterator;
 
@@ -110,7 +111,7 @@ Usage
         Iter iter_;
     };
 
-| Namespace can be customized by setting ``ITERF_NAMESPACE`` before including the header
+| Namespace can be customized by setting ``ITERATOR_FACADE_NS`` before including the header
 | ``my_iterator::dereference()`` is not required to return lvalue references. However, the value returned should not be a reference to a value owned by the iterator itself as it can result in dangling references.
 | ``my_iterator::advance(difference_type)`` will be used in place of ``my_iterator::increment()`` or ``my_iterator::decrement()`` if any of them are not defined.
 | ``my_iterator::distance_to(T)`` will be used in place of ``my_iterator::equals(T)`` if it is not defined.
