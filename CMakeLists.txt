@@ -3,15 +3,13 @@ cmake_minimum_required(VERSION 3.15)
 # Generate compile_commands.json for clang based tools
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-option(ITERF_ENABLE_UNIT_TESTING
-       "Enable unit tests for the projects (from the `test` subfolder)." OFF)
+include(cmake/vcpkg.cmake)
+
+vcpkg_feature(ITERF_ENABLE_UNIT_TESTING
+       "Enable unit tests for the projects (from the `test` subfolder)." OFF "test")
 
 option(ITERF_ENABLE_DOXYGEN "Enable Doxygen documentation builds of source."
        OFF)
-
-if(ITERF_ENABLE_UNIT_TESTING)
-  list(APPEND VCPKG_MANIFEST_FEATURES "test")
-endif()
 
 #
 # Project details
