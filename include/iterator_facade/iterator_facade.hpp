@@ -25,14 +25,10 @@
 #  define ITERATOR_FACADE_NS iterator_facade
 #endif
 
-#ifndef ITERATOR_FACADE_DETAIL_NS
-#  define ITERATOR_FACADE_DETAIL_NS detail
-#endif
-
 // https://vector-of-bool.github.io/2020/06/13/cpp20-iter-facade.html
 namespace ITERATOR_FACADE_NS {
 
-namespace ITERATOR_FACADE_DETAIL_NS {
+namespace _ifacade_detail {
 
 /// \brief Wrapper for rvalue return values when expecting an lvalue address
 /// \tparam T
@@ -203,7 +199,7 @@ template <class T>
   return {std::move(t)};
 }
 
-}  // namespace ITERATOR_FACADE_DETAIL_NS
+}  // namespace _ifacade_detail
 
 /** @defgroup facade Iterator facade
  *  @{
@@ -259,7 +255,7 @@ class iterator_facade {
    * @return decltype(Derived{}.dereference())
    */
   [[nodiscard]] ITERF_ALWAYS_INLINE constexpr auto operator*() const
-      noexcept(ITERATOR_FACADE_DETAIL_NS::has_nothrow_dereference<self_type>) -> decltype(auto) {
+      noexcept(_ifacade_detail::has_nothrow_dereference<self_type>) -> decltype(auto) {
     return self().dereference();
   }
 
@@ -269,12 +265,12 @@ class iterator_facade {
    * @return Pointer or arrow proxy to the return value of <code>Derived::dereference() const</code>
    */
   [[nodiscard]] ITERF_ALWAYS_INLINE constexpr auto
-  operator->() const noexcept((ITERATOR_FACADE_DETAIL_NS::has_nothrow_dereference<self_type> && noexcept(ITERATOR_FACADE_DETAIL_NS::arrow_helper(**this))))
+  operator->() const noexcept((_ifacade_detail::has_nothrow_dereference<self_type> && noexcept(_ifacade_detail::arrow_helper(**this))))
       -> decltype(auto) {
-    if constexpr (ITERATOR_FACADE_DETAIL_NS::dereferences_lvalue<self_type>) {
+    if constexpr (_ifacade_detail::dereferences_lvalue<self_type>) {
       return std::addressof(**this);
     } else {
-      return ITERATOR_FACADE_DETAIL_NS::arrow_helper(**this);
+      return _ifacade_detail::arrow_helper(**this);
     }
   }
 
@@ -294,9 +290,9 @@ class iterator_facade {
    * @return true if lhs == rhs
    * @return false otherwise
    */
-  template <ITERATOR_FACADE_DETAIL_NS::equality_comparable<self_type> T>
+  template <_ifacade_detail::equality_comparable<self_type> T>
   [[nodiscard]] ITERF_ALWAYS_INLINE constexpr auto friend operator==(self_type const& lhs, T const& rhs) noexcept(
-      ITERATOR_FACADE_DETAIL_NS::nothrow_equality_comparable<T, self_type>) -> bool {
+      _ifacade_detail::nothrow_equality_comparable<T, self_type>) -> bool {
     return lhs.equals(rhs);
   }
 
@@ -310,12 +306,12 @@ class iterator_facade {
    * @return true if lhs == rhs
    * @return false otherwise
    */
-  template <ITERATOR_FACADE_DETAIL_NS::has_distance_to<self_type> T>
+  template <_ifacade_detail::has_distance_to<self_type> T>
 #ifndef ITERF_DOXYGEN_RUNNING
-    requires(!ITERATOR_FACADE_DETAIL_NS::equality_comparable<T, self_type>)
+    requires(!_ifacade_detail::equality_comparable<T, self_type>)
 #endif
   [[nodiscard]] ITERF_ALWAYS_INLINE constexpr auto friend operator==(self_type const& lhs, T const& rhs) noexcept(
-      ITERATOR_FACADE_DETAIL_NS::has_nothrow_distance_to<T, self_type>) -> bool {
+      _ifacade_detail::has_nothrow_distance_to<T, self_type>) -> bool {
     return lhs.distance_to(rhs) == 0;
   }
 
@@ -332,8 +328,8 @@ class iterator_facade {
    * @return Derived&
    */
   template <class T = self_type>
-    requires(ITERATOR_FACADE_DETAIL_NS::has_increment<T>)
-  ITERF_ALWAYS_INLINE constexpr auto operator++() noexcept(ITERATOR_FACADE_DETAIL_NS::has_nothrow_increment<self_type>)
+    requires(_ifacade_detail::has_increment<T>)
+  ITERF_ALWAYS_INLINE constexpr auto operator++() noexcept(_ifacade_detail::has_nothrow_increment<self_type>)
       -> self_type& {
     self().increment();
     return self();
@@ -346,9 +342,9 @@ class iterator_facade {
    * @return Derived&
    */
   template <class T = self_type>
-    requires(!ITERATOR_FACADE_DETAIL_NS::has_increment<T> && ITERATOR_FACADE_DETAIL_NS::has_advance<T, int>)
-  ITERF_ALWAYS_INLINE constexpr auto operator++() noexcept(
-      ITERATOR_FACADE_DETAIL_NS::has_nothrow_advance<self_type, int>) -> self_type& {
+    requires(!_ifacade_detail::has_increment<T> && _ifacade_detail::has_advance<T, int>)
+  ITERF_ALWAYS_INLINE constexpr auto operator++() noexcept(_ifacade_detail::has_nothrow_advance<self_type, int>)
+      -> self_type& {
     self().advance(1);
     return self();
   }
@@ -359,7 +355,7 @@ class iterator_facade {
    * @return Derived&
    */
   template <class T = self_type>
-    requires(ITERATOR_FACADE_DETAIL_NS::has_increment<T> || ITERATOR_FACADE_DETAIL_NS::has_advance<T, int>)
+    requires(_ifacade_detail::has_increment<T> || _ifacade_detail::has_advance<T, int>)
   [[nodiscard]] constexpr auto operator++(int) noexcept(
       std::is_nothrow_copy_constructible_v<self_type>&& noexcept(++(*this))) -> self_type {
     auto copy = self();
@@ -380,8 +376,8 @@ class iterator_facade {
    * @return Derived&
    */
   template <class T = self_type>
-    requires(ITERATOR_FACADE_DETAIL_NS::has_decrement<T>)
-  ITERF_ALWAYS_INLINE constexpr auto operator--() noexcept(ITERATOR_FACADE_DETAIL_NS::has_nothrow_decrement<self_type>)
+    requires(_ifacade_detail::has_decrement<T>)
+  ITERF_ALWAYS_INLINE constexpr auto operator--() noexcept(_ifacade_detail::has_nothrow_decrement<self_type>)
       -> self_type& {
     self().decrement();
     return self();
@@ -394,9 +390,9 @@ class iterator_facade {
    * @return Derived&
    */
   template <class T = self_type>
-    requires(!ITERATOR_FACADE_DETAIL_NS::has_decrement<T> && ITERATOR_FACADE_DETAIL_NS::has_advance<T, int>)
-  ITERF_ALWAYS_INLINE constexpr auto operator--() noexcept(
-      ITERATOR_FACADE_DETAIL_NS::has_nothrow_advance<self_type, int>) -> self_type& {
+    requires(!_ifacade_detail::has_decrement<T> && _ifacade_detail::has_advance<T, int>)
+  ITERF_ALWAYS_INLINE constexpr auto operator--() noexcept(_ifacade_detail::has_nothrow_advance<self_type, int>)
+      -> self_type& {
     self().advance(-1);
     return self();
   }
@@ -407,7 +403,7 @@ class iterator_facade {
    * @return Derived&
    */
   template <class T = self_type>
-    requires(ITERATOR_FACADE_DETAIL_NS::has_decrement<T> || ITERATOR_FACADE_DETAIL_NS::has_advance<T, int>)
+    requires(_ifacade_detail::has_decrement<T> || _ifacade_detail::has_advance<T, int>)
   [[nodiscard]] constexpr auto operator--(int) noexcept(
       std::is_nothrow_copy_constructible_v<self_type>&& noexcept(--(*this))) -> self_type {
     auto copy = self();
@@ -422,41 +418,41 @@ class iterator_facade {
    *  @{
    */
 
-  template <ITERATOR_FACADE_DETAIL_NS::advance_type_arg<self_type> D>
+  template <_ifacade_detail::advance_type_arg<self_type> D>
   ITERF_ALWAYS_INLINE friend constexpr auto operator+=(self_type& self, D offset) noexcept(
-      ITERATOR_FACADE_DETAIL_NS::has_nothrow_advance<self_type, D>) -> self_type& {
+      _ifacade_detail::has_nothrow_advance<self_type, D>) -> self_type& {
     self.advance(offset);
     return self;
   }
 
-  template <ITERATOR_FACADE_DETAIL_NS::advance_type_arg<self_type> D>
+  template <_ifacade_detail::advance_type_arg<self_type> D>
   [[nodiscard]] ITERF_ALWAYS_INLINE friend constexpr auto operator+(self_type left, D off) noexcept(
-      ITERATOR_FACADE_DETAIL_NS::has_nothrow_advance<self_type, D>) -> self_type {
+      _ifacade_detail::has_nothrow_advance<self_type, D>) -> self_type {
     return left += off;
   }
 
-  template <ITERATOR_FACADE_DETAIL_NS::advance_type_arg<self_type> D>
+  template <_ifacade_detail::advance_type_arg<self_type> D>
   [[nodiscard]] ITERF_ALWAYS_INLINE friend constexpr auto operator+(D off, self_type right) noexcept(
-      ITERATOR_FACADE_DETAIL_NS::has_nothrow_advance<self_type, D>) -> self_type {
+      _ifacade_detail::has_nothrow_advance<self_type, D>) -> self_type {
     return right += off;
   }
 
-  template <ITERATOR_FACADE_DETAIL_NS::advance_type_arg<self_type> D>
+  template <_ifacade_detail::advance_type_arg<self_type> D>
   [[nodiscard]] ITERF_ALWAYS_INLINE friend constexpr auto operator-(self_type left, D off) noexcept(
-      ITERATOR_FACADE_DETAIL_NS::has_nothrow_advance<self_type, D>) -> self_type {
+      _ifacade_detail::has_nothrow_advance<self_type, D>) -> self_type {
     return left + -off;
   }
 
-  template <ITERATOR_FACADE_DETAIL_NS::advance_type_arg<self_type> D>
+  template <_ifacade_detail::advance_type_arg<self_type> D>
   ITERF_ALWAYS_INLINE friend constexpr auto operator-=(self_type& left, D off) noexcept(
-      ITERATOR_FACADE_DETAIL_NS::has_nothrow_advance<self_type, D>) -> self_type& {
+      _ifacade_detail::has_nothrow_advance<self_type, D>) -> self_type& {
     return left = left - off;
   }
 
-  template <class T = self_type, ITERATOR_FACADE_DETAIL_NS::advance_type_arg<T> D>
+  template <class T = self_type, _ifacade_detail::advance_type_arg<T> D>
   [[nodiscard]] ITERF_ALWAYS_INLINE constexpr auto operator[](D off) const
-      noexcept(ITERATOR_FACADE_DETAIL_NS::has_nothrow_advance<self_type, D>&&
-                   ITERATOR_FACADE_DETAIL_NS::has_nothrow_dereference<self_type>) -> decltype(auto) {
+      noexcept(_ifacade_detail::has_nothrow_advance<self_type, D>&& _ifacade_detail::has_nothrow_dereference<self_type>)
+          -> decltype(auto) {
     return (self() + off).dereference();
   }
 
@@ -475,9 +471,9 @@ class iterator_facade {
    * @param right
    * @return decltype(auto)
    */
-  template <ITERATOR_FACADE_DETAIL_NS::has_distance_to<self_type> T>
+  template <_ifacade_detail::has_distance_to<self_type> T>
   [[nodiscard]] ITERF_ALWAYS_INLINE friend constexpr auto operator-(const T& left, self_type const& right) noexcept(
-      ITERATOR_FACADE_DETAIL_NS::has_nothrow_distance_to<T, self_type>) -> decltype(auto) {
+      _ifacade_detail::has_nothrow_distance_to<T, self_type>) -> decltype(auto) {
     // Many many times must we `++right` to reach `left` ?
     return right.distance_to(left);
   }
@@ -490,14 +486,13 @@ class iterator_facade {
    * @param right sentinel
    * @return decltype(auto)
    */
-  template <ITERATOR_FACADE_DETAIL_NS::has_distance_to<self_type> Sentinel>
+  template <_ifacade_detail::has_distance_to<self_type> Sentinel>
 #ifndef ITERF_DOXYGEN_RUNNING
     requires(!std::same_as<Sentinel, self_type>)
 #endif
   [[nodiscard]] ITERF_ALWAYS_INLINE friend constexpr auto operator-(
       const self_type& left,
-      Sentinel const& right) noexcept(ITERATOR_FACADE_DETAIL_NS::has_nothrow_distance_to<Sentinel, self_type>)
-      -> decltype(auto) {
+      Sentinel const& right) noexcept(_ifacade_detail::has_nothrow_distance_to<Sentinel, self_type>) -> decltype(auto) {
     return -(right - left);
   }
 
@@ -508,10 +503,10 @@ class iterator_facade {
    *  @{
    */
 
-  template <ITERATOR_FACADE_DETAIL_NS::has_distance_to<self_type> Sentinel>
+  template <_ifacade_detail::has_distance_to<self_type> Sentinel>
   [[nodiscard]] ITERF_ALWAYS_INLINE friend constexpr auto operator<=>(
       const self_type& left,
-      const Sentinel& right) noexcept(ITERATOR_FACADE_DETAIL_NS::has_nothrow_distance_to<Sentinel, self_type>) {
+      const Sentinel& right) noexcept(_ifacade_detail::has_nothrow_distance_to<Sentinel, self_type>) {
     return -left.distance_to(right) <=> 0;
   }
 
@@ -520,7 +515,7 @@ class iterator_facade {
 
 /** @} */  // end of facade
 
-namespace ITERATOR_FACADE_DETAIL_NS {
+namespace _ifacade_detail {
 
 template <class Derived>
 struct is_base_of_facade {
@@ -532,7 +527,7 @@ struct is_base_of_facade {
  public:
   constexpr static bool value = decltype(derives(std::declval<Derived>()))::value;
 };
-}  // namespace ITERATOR_FACADE_DETAIL_NS
+}  // namespace _ifacade_detail
 
 /**
  * @brief Check if type is derived from \ref iterator_facade
@@ -540,7 +535,7 @@ struct is_base_of_facade {
  * @tparam T type to check
  */
 template <class T>
-concept iterator_facade_subclass = ITERATOR_FACADE_DETAIL_NS::is_base_of_facade<T>::value;
+concept iterator_facade_subclass = _ifacade_detail::is_base_of_facade<T>::value;
 
 // clang-format off
 template <class T>
@@ -578,7 +573,7 @@ concept nothrow_equals = std::forward_iterator<T> && std::sentinel_for<S, T> && 
 };
 // clang-format on
 
-namespace ITERATOR_FACADE_DETAIL_NS {
+namespace _ifacade_detail {
   template <class NewFirst, class T>
   struct replace_first_param {
     using type = T;
@@ -598,7 +593,7 @@ namespace ITERATOR_FACADE_DETAIL_NS {
   struct rebind_alias<T, Other, std::void_t<typename T::template rebind<Other>>> {
     using type = typename T::template rebind<Other>;
   };
-}  // namespace ITERATOR_FACADE_DETAIL_NS
+}  // namespace _ifacade_detail
 
 }  // namespace ITERATOR_FACADE_NS
 
@@ -606,23 +601,23 @@ template <ITERATOR_FACADE_NS ::iterator_facade_subclass Iter>
 struct std::iterator_traits<Iter> {
   using reference = decltype(*std::declval<Iter&>());
   using pointer = decltype(std::declval<Iter&>().operator->());
-  using difference_type = ITERATOR_FACADE_NS ::ITERATOR_FACADE_DETAIL_NS::inferred_difference_type_t<Iter>;
-  using value_type = ITERATOR_FACADE_NS ::ITERATOR_FACADE_DETAIL_NS::inferred_value_type_t<Iter>;
+  using difference_type = ITERATOR_FACADE_NS ::_ifacade_detail::inferred_difference_type_t<Iter>;
+  using value_type = ITERATOR_FACADE_NS ::_ifacade_detail::inferred_value_type_t<Iter>;
 
-  using iterator_category = ITERATOR_FACADE_NS ::ITERATOR_FACADE_DETAIL_NS::iterator_category_t<Iter>;
-  using iterator_concept = ITERATOR_FACADE_NS ::ITERATOR_FACADE_DETAIL_NS::iterator_concept_t<Iter>;
+  using iterator_category = ITERATOR_FACADE_NS ::_ifacade_detail::iterator_category_t<Iter>;
+  using iterator_concept = ITERATOR_FACADE_NS ::_ifacade_detail::iterator_concept_t<Iter>;
 };
 
 // specialization for contiguous iterators since the standard ends in compile error if Iter is not a template
 template <ITERATOR_FACADE_NS ::iterator_facade_subclass Iter>
-  requires(ITERATOR_FACADE_NS::ITERATOR_FACADE_DETAIL_NS::satisfies_contiguous<Iter>)
+  requires(ITERATOR_FACADE_NS::_ifacade_detail::satisfies_contiguous<Iter>)
 struct std::pointer_traits<Iter> {
   using pointer = Iter;
   using element_type = std::iter_value_t<Iter>;
   using difference_type = std::iter_difference_t<Iter>;
 
   template <class Other>
-  using rebind = typename ITERATOR_FACADE_NS::ITERATOR_FACADE_DETAIL_NS::rebind_alias<Iter, Other>::type;
+  using rebind = typename ITERATOR_FACADE_NS::_ifacade_detail::rebind_alias<Iter, Other>::type;
 
   using reference = conditional_t<is_void_v<element_type>, char, element_type>&;
 

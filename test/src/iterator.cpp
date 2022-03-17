@@ -124,7 +124,7 @@ TEST_CASE("Iterator concepts", "[concepts]") {
     using It = iterator<bidirectional_options>;
 
     STATIC_REQUIRE(std::weakly_incrementable<It>);
-    STATIC_REQUIRE(detail::equality_comparable<It>);
+    STATIC_REQUIRE(_ifacade_detail::equality_comparable<It>);
     STATIC_REQUIRE(std::same_as<std::iterator_traits<It>::iterator_category, std::bidirectional_iterator_tag>);
     STATIC_REQUIRE(std::same_as<std::iterator_traits<It>::iterator_concept, std::bidirectional_iterator_tag>);
     STATIC_REQUIRE(std::input_iterator<It>);
